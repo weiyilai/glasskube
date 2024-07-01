@@ -10,14 +10,20 @@ import (
 )
 
 type PackageV1Alpha1Client interface {
-	Packages() PackageInterface
+	ClusterPackages() ClusterPackageInterface
+	Packages(namespace string) PackageInterface
 	PackageInfos() PackageInfoInterface
 	PackageRepositories() PackageRepositoryInterface
 	WithStores(
+		clusterPackageStore cache.Store,
 		packageStore cache.Store,
 		packageInfoStore cache.Store,
 		packageRepositoryStore cache.Store,
 	) PackageV1Alpha1Client
+}
+
+type ClusterPackageInterface interface {
+	readWriteClientInterface[v1alpha1.ClusterPackage, v1alpha1.ClusterPackageList]
 }
 
 type PackageInterface interface {
@@ -35,7 +41,7 @@ type PackageRepositoryInterface interface {
 type readOnlyClientInterface[T any, L any] interface {
 	Get(ctx context.Context, name string, target *T) error
 	GetAll(ctx context.Context, target *L) error
-	Watch(ctx context.Context) (watch.Interface, error)
+	Watch(ctx context.Context, opts metav1.ListOptions) (watch.Interface, error)
 }
 
 type readWriteClientInterface[T any, L any] interface {
